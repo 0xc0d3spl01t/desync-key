@@ -1,0 +1,204 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+html, body {
+    height: 100%;
+    background: linear-gradient(135deg, #09090d 0%, #1a1a2e 100%);
+    overflow-x: hidden;
+}
+
+.keysyscontainer {
+    min-height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 20px;
+}
+
+.box {
+    width: 100%;
+    max-width: 500px;
+    background: #0f0f17;
+    border-radius: 12px;
+    border: 1px solid #2a2a3e;
+    padding: 32px;
+    margin: 8px 0;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    transition: transform 0.3s ease;
+}
+
+.box:hover {
+    transform: translateY(-5px);
+}
+
+.title {
+    font-size: 24px;
+    font-weight: 600;
+    display: block;
+    margin-bottom: 16px;
+    color: #fff;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.text {
+    font-size: 14px;
+    font-weight: 300;
+    color: #bebec2;
+    display: block;
+    margin-bottom: 20px;
+    line-height: 1.6;
+}
+
+.step-info {
+    font-size: 16px;
+    font-weight: 500;
+    color: #fff;
+    text-align: center;
+    margin-top: 16px;
+}
+
+.button {
+    border: none;
+    color: white;
+    padding: 16px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: block;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 500;
+    font-size: 14px;
+    margin: 20px auto 0;
+    cursor: pointer;
+    width: 100%;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
+.button:active {
+    transform: translateY(0);
+}
+
+.button:disabled {
+    background: #2a2a3e;
+    cursor: not-allowed;
+    box-shadow: none;
+    opacity: 0.6;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: #1a1a2e;
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 20px 0;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    width: 0%;
+    transition: width 0.5s ease;
+}
+
+.key-display {
+    background: #1a1a2e;
+    padding: 16px;
+    border-radius: 8px;
+    margin: 16px 0;
+    word-break: break-all;
+    color: #667eea;
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+    font-size: 13px;
+    border: 1px solid #667eea;
+    text-align: center;
+}
+
+.loader {
+    border: 4px solid #1a1a2e;
+    border-top: 4px solid #667eea;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 20px auto 0;
+}
+
+.hidden {
+    display: none !important;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.verify-section {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #2a2a3e;
+}
+
+.verify-input {
+    width: 100%;
+    padding: 14px;
+    background: #1a1a2e;
+    border: 1px solid #2a2a3e;
+    border-radius: 8px;
+    color: #fff;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    margin-bottom: 12px;
+    transition: border-color 0.3s ease;
+}
+
+.verify-input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.verify-input::placeholder {
+    color: #666;
+}
+
+.verify-btn {
+    background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+    box-shadow: 0 4px 15px rgba(74, 222, 128, 0.4);
+}
+
+.verify-btn:hover {
+    box-shadow: 0 6px 20px rgba(74, 222, 128, 0.6);
+}
+
+.warning {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    padding: 12px;
+    border-radius: 8px;
+    margin-top: 12px;
+    color: #ef4444;
+    font-size: 13px;
+}
+
+@media (max-width: 500px) {
+    .box {
+        padding: 24px;
+    }
+}

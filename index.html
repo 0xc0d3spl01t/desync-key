@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snow Hub - Key System</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="keysyscontainer">
+    <div class="box" id="stepBox">
+      <center><span class="title">Snow Hub Key System</span></center>
+      <span class="text" id="statusText">
+        Complete 3 Linkvertise checkpoints to get your 24-hour license key.
+      </span>
+      <div id="progressBar" class="progress-bar">
+        <div id="progressFill" class="progress-fill"></div>
+      </div>
+      <span class="text step-info">Step <span id="currentStep">0</span>/3</span>
+      <button id="actionButton" class="button" onclick="handleStep()">Start - Step 1</button>
+      <div id="loader" class="loader hidden"></div>
+      <div id="verifySection" class="verify-section hidden">
+        <span class="text">Enter the completion code from the Linkvertise page:</span>
+        <input type="text" id="verifyCode" class="verify-input" placeholder="Enter code...">
+        <button onclick="verifyStep()" class="button verify-btn">Verify & Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
