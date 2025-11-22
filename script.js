@@ -1,9 +1,9 @@
 // Anti-bypass Configuration
 const CONFIG = {
     linkvertiseLinks: [
-        "https://linkvertise.com/YOUR-LINK-1",
-        "https://linkvertise.com/YOUR-LINK-2", 
-        "https://linkvertise.com/YOUR-LINK-3"
+        "https://link-hub.net/1350251/09ZydmogGnmy",
+        "https://direct-link.net/1350251/YVBOjBm7dCR4", 
+        "https://link-hub.net/1350251/ZEMonA7VOARt"
     ],
     workerEndpoint: "/api/generate-key",
     localStorageKey: "snowhub_keysystem_progress",
