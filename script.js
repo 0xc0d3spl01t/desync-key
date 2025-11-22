@@ -8,7 +8,9 @@ const CONFIG = {
     workerEndpoint: "/api/generate-key",
     localStorageKey: "snowhub_keysystem_progress",
     sessionKey: "snowhub_session_id",
-    anticheatEndpoint: "/api/verify-step"
+    anticheatEndpoint: "/api/verify-step",
+    // Redirect URL für Linkvertise (muss in Linkvertise-Dashboard eingestellt sein)
+    redirectBase: "https://desync-key.pages.dev"
 };
 
 const notyf = new Notyf({
@@ -107,26 +109,29 @@ function handleStep() {
     const link = CONFIG.linkvertiseLinks[currentStep];
     const actionButton = document.getElementById('actionButton');
     
-    // Add verification token to URL
+    // Create step token to identify which checkpoint this is
+    const stepToken = btoa(sessionId + '_step' + currentStep + '_' + Date.now());
+    
+    // Store the step token for verification when user returns
+    sessionStorage.setItem('pending_step', currentStep.toString());
+    sessionStorage.setItem('pending_token', stepToken);
+    
+    // Build full Linkvertise URL with redirect back to our site
+    // The redirect URL will include the step parameter
+    const redirectUrl = encodeURIComponent(`${CONFIG.redirectBase}?step=${currentStep}&token=${stepToken}`);
+    const linkWithRedirect = link + (link.includes('?') ? '&' : '?') + 'return=' + redirectUrl;
+    
+    // For traditional popup monitoring (fallback)
     const verifyToken = btoa(sessionId + '_' + currentStep + '_' + Date.now());
     const linkWithToken = link + (link.includes('?') ? '&' : '?') + 'ref=' + verifyToken;
     
-    // Open in new window
-    linkvertiseWindow = window.open(linkWithToken, '_blank', 'width=1000,height=800');
+    // Try to redirect in same window (works better with Linkvertise)
+    // Store current state before redirect
+    sessionStorage.setItem('linkvertise_redirect', 'true');
+    sessionStorage.setItem('linkvertise_step', currentStep.toString());
     
-    if (!linkvertiseWindow) {
-        notyf.error('Please allow popups for this site!');
-        return;
-    }
-    
-    notyf.success(`Opening checkpoint ${currentStep + 1}. Complete it fully!`);
-    
-    // Disable button
-    actionButton.disabled = true;
-    actionButton.textContent = 'Waiting for completion...';
-    
-    // Start monitoring the window
-    startWindowMonitoring();
+    // Redirect to Linkvertise
+    window.location.href = link;
 }
 
 // Monitor Linkvertise window
@@ -330,63 +335,52 @@ function copyToClipboard(text) {
     });
 }
 
-// Check URL parameters for hash from Linkvertise redirect
+// Check URL parameters for redirect from Linkvertise
 async function checkURLParameters() {
     const urlParams = new URLSearchParams(window.location.search);
     const hash = urlParams.get('hash');
+    const step = urlParams.get('step');
+    const token = urlParams.get('token');
     
-    if (!hash) return;
+    // Check if we're returning from a Linkvertise redirect
+    const wasRedirected = sessionStorage.getItem('linkvertise_redirect') === 'true';
+    const expectedStep = sessionStorage.getItem('linkvertise_step');
     
     // Clean URL immediately
-    window.history.replaceState({}, document.title, window.location.pathname);
-    
-    // Check if we're expecting a completion
-    if (currentStep >= 3) {
-        notyf.error('All steps already completed!');
-        return;
+    if (hash || step || wasRedirected) {
+        window.history.replaceState({}, document.title, window.location.pathname);
     }
     
-    const loader = document.getElementById('loader');
-    loader.classList.remove('hidden');
-    
-    notyf.open({
-        type: 'info',
-        message: 'Processing Linkvertise completion...',
-        duration: 3000
-    });
-    
-    try {
-        // Use hash as verification - the hash IS the verification from Linkvertise
-        // We accept it directly and move to next step
-        const response = await fetch(CONFIG.anticheatEndpoint, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                sessionId: sessionId,
-                step: currentStep,
-                code: hash,
-                timestamp: Date.now(),
-                fromRedirect: true
-            })
+    // Handle hash parameter (current Linkvertise setup)
+    if (hash && wasRedirected && expectedStep !== null) {
+        const stepNum = parseInt(expectedStep);
+        
+        // Clear redirect flags
+        sessionStorage.removeItem('linkvertise_redirect');
+        sessionStorage.removeItem('linkvertise_step');
+        
+        // Check if we're on the expected step
+        if (currentStep !== stepNum) {
+            notyf.error('Step mismatch detected. Please try again.');
+            return;
+        }
+        
+        if (currentStep >= 3) {
+            notyf.error('All steps already completed!');
+            return;
+        }
+        
+        const loader = document.getElementById('loader');
+        loader.classList.remove('hidden');
+        
+        notyf.open({
+            type: 'info',
+            message: `Processing checkpoint ${currentStep + 1} completion...`,
+            duration: 2000
         });
         
-        const data = await response.json();
-        
-        if (data.success) {
-            // Valid redirect - proceed
-            currentStep++;
-            saveProgress();
-            notyf.success(`✓ Checkpoint ${currentStep} completed via Linkvertise!`);
-            
-            setTimeout(() => {
-                updateUI();
-                loader.classList.add('hidden');
-            }, 1000);
-        } else {
-            // Invalid hash - but we'll still accept it since it came from Linkvertise
-            // This is a fallback for when backend doesn't recognize the hash format
+        // Accept the redirect and move to next step
+        setTimeout(() => {
             currentStep++;
             saveProgress();
             notyf.success(`✓ Checkpoint ${currentStep} completed!`);
@@ -394,20 +388,46 @@ async function checkURLParameters() {
             setTimeout(() => {
                 updateUI();
                 loader.classList.add('hidden');
-            }, 1000);
-        }
-        
-    } catch (error) {
-        console.error('Hash verification error:', error);
-        // Even on error, we accept the redirect since user came from Linkvertise
-        currentStep++;
-        saveProgress();
-        notyf.success(`✓ Checkpoint ${currentStep} completed!`);
-        
-        setTimeout(() => {
-            updateUI();
-            loader.classList.add('hidden');
+            }, 500);
         }, 1000);
+        
+        return;
+    }
+    
+    // Handle step parameter (future enhanced setup)
+    if (step !== null && token) {
+        const pendingStep = sessionStorage.getItem('pending_step');
+        const pendingToken = sessionStorage.getItem('pending_token');
+        
+        if (pendingStep === step && pendingToken === token) {
+            // Valid redirect with correct step
+            sessionStorage.removeItem('pending_step');
+            sessionStorage.removeItem('pending_token');
+            
+            const stepNum = parseInt(step);
+            
+            if (currentStep === stepNum && currentStep < 3) {
+                const loader = document.getElementById('loader');
+                loader.classList.remove('hidden');
+                
+                notyf.open({
+                    type: 'info',
+                    message: `Processing checkpoint ${currentStep + 1} completion...`,
+                    duration: 2000
+                });
+                
+                setTimeout(() => {
+                    currentStep++;
+                    saveProgress();
+                    notyf.success(`✓ Checkpoint ${currentStep} completed!`);
+                    
+                    setTimeout(() => {
+                        updateUI();
+                        loader.classList.add('hidden');
+                    }, 500);
+                }, 1000);
+            }
+        }
     }
 }
 
@@ -415,7 +435,7 @@ async function checkURLParameters() {
 window.addEventListener('DOMContentLoaded', () => {
     initSession();
     loadProgress();
-    checkURLParameters(); // Check for hash parameter from redirect
+    checkURLParameters(); // Check for redirect from Linkvertise
     updateUI();
 });
 
