@@ -367,14 +367,20 @@ async function checkURLParameters() {
             
             if (data.success) {
                 // Valid hash - proceed to next step
-                currentStep++;
-                saveProgress();
-                notyf.success(`✓ Linkvertise redirect verified! Step ${currentStep} completed!`);
-                
-                setTimeout(() => {
-                    updateUI();
+                if (currentStep < 3) {
+                    currentStep++;
+                    saveProgress();
+                    notyf.success(`✓ Linkvertise redirect verified! Step ${currentStep} completed!`);
+                    
+                    setTimeout(() => {
+                        updateUI();
+                        loader.classList.add('hidden');
+                    }, 1000);
+                } else {
+                    // Already at max steps
+                    notyf.error('❌ All steps already completed!');
                     loader.classList.add('hidden');
-                }, 1000);
+                }
             } else {
                 // Invalid hash
                 notyf.error('❌ Invalid redirect hash! Please try again.');
