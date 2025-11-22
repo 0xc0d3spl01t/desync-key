@@ -330,11 +330,77 @@ function copyToClipboard(text) {
     });
 }
 
+// Check URL parameters for hash from Linkvertise redirect
+async function checkURLParameters() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const hash = urlParams.get('hash');
+    
+    if (hash) {
+        notyf.open({
+            type: 'info',
+            message: '🔄 Processing Linkvertise redirect...',
+            duration: 3000
+        });
+        
+        // Clean URL immediately
+        window.history.replaceState({}, document.title, window.location.pathname);
+        
+        // Verify hash with backend
+        const loader = document.getElementById('loader');
+        loader.classList.remove('hidden');
+        
+        try {
+            const response = await fetch(CONFIG.anticheatEndpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    sessionId: sessionId,
+                    step: currentStep,
+                    code: hash,
+                    timestamp: Date.now()
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Valid hash - proceed to next step
+                if (currentStep < 3) {
+                    currentStep++;
+                    saveProgress();
+                    notyf.success(`✓ Linkvertise redirect verified! Step ${currentStep} completed!`);
+                    
+                    setTimeout(() => {
+                        updateUI();
+                        loader.classList.add('hidden');
+                    }, 1000);
+                } else {
+                    // Already at max steps
+                    notyf.error('❌ All steps already completed!');
+                    loader.classList.add('hidden');
+                }
+            } else {
+                // Invalid hash
+                notyf.error('❌ Invalid redirect hash! Please try again.');
+                loader.classList.add('hidden');
+            }
+            
+        } catch (error) {
+            console.error('Hash verification error:', error);
+            notyf.error('Failed to verify redirect. Please try again.');
+            loader.classList.add('hidden');
+        }
+    }
+}
+
 // Initialize
 window.addEventListener('DOMContentLoaded', () => {
     initSession();
     loadProgress();
     updateUI();
+    checkURLParameters();
 });
 
 // Cleanup on page unload
